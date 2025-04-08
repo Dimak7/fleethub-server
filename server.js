@@ -27,6 +27,11 @@ app.use((req, res, next) => {
   }
 });
 
+// ✅ Root route for testing Render status
+app.get("/", (req, res) => {
+  res.send("🚛 FleetHub server is running and ready to process subscriptions.");
+});
+
 // ✅ Создание Checkout-сессии
 app.post("/create-checkout-session", async (req, res) => {
   try {
@@ -41,17 +46,17 @@ app.post("/create-checkout-session", async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
-      client_reference_id: userId, // 👈 ключ для Firebase
+      client_reference_id: userId,
       success_url: `https://www.driverfleethub.com/financial-tools`,
       cancel_url: "https://www.driverfleethub.com",
       line_items: [
         {
-          price: "price_1R3tlhBI2Mwax730T1svWg21", // ✅ твой price_id
+          price: "price_1R3tlhBI2Mwax730T1svWg21",
           quantity: 1,
         },
       ],
       subscription_data: {
-        trial_period_days: 3, // ✅ 7-дневный триал
+        trial_period_days: 3,
       },
     });
 
@@ -79,7 +84,6 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // 🔥 Обработка успешной оплаты
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const userId = session.client_reference_id;
@@ -110,4 +114,6 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
   res.status(200).send("Webhook received");
 });
 
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`✅ Server running on http://localhost:${PORT} or Render`);
+});
